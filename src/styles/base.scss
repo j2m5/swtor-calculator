@@ -1,0 +1,134 @@
+@import "variables";
+
+.flex-container {
+  display: flex;
+}
+
+.flex-center-axis-x {
+  justify-content: center;
+}
+
+.flex-center-axis-y {
+  align-items: center;
+}
+
+.hr {
+  border-bottom: 1px solid #85827d;
+  margin: 5px 0;
+}
+
+.nav {
+  text-align: center;
+  a {
+    color: $lightGray;
+    font-size: 14px;
+    &.router-link-active {
+      color: #85827d;
+    }
+  }
+}
+
+.popper {
+  background-color: rgba(0, 0, 0, 0.8);
+  border: 1px solid #64b9d5;
+  border-radius: 5px;
+  color: $lightGray;
+  padding: 5px;
+  b {
+    color: $yellow;
+  }
+  p {
+    color: $lightGray;
+    text-align: left;
+  }
+}
+
+.scrolly {
+  &.scrollbar .scrolly-bar:before {
+    background: #003d76;
+    width: 30%;
+    right: -17px;
+  }
+}
+
+.credits {
+  color: $middleGreen;
+  display: flex;
+  align-items: center;
+  &:before {
+    content: url("/src/assets/credit_symbol_green.png");
+  }
+}
+
+.item-img {
+  border-radius: 3px;
+  background-repeat: no-repeat;
+  background-size: contain;
+  height: 35px;
+  width: 35px;
+}
+
+.item-name {
+  font-size: 13px;
+  margin-left: 10px;
+}
+
+.item {
+  cursor: pointer;
+  border-bottom: 1px solid #85827d;
+  display: flex;
+  align-items: center;
+  padding: 5px 2px;
+}
+
+.item-inventory {
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  height: 35px;
+  width: 35px;
+}
+
+.prototype {
+  border: 1px solid $blue;
+}
+
+.prototype-text {
+  color: $blue;
+}
+
+.artifact {
+  border: 1px solid $purple;
+}
+
+.artifact-text {
+  color: $purple;
+}
+
+.legendary {
+  border: 1px solid $gold;
+}
+
+.legendary-text {
+  color: $gold;
+}
+
+.text-left {
+  text-align: left;
+}
+
+.text-center {
+  text-align: center;
+}
+
+.fz-12 {
+  font-size: 12px;
+}
+
+.fz-14 {
+  font-size: 14px;
+}
+
+.mt-5 {
+  margin-top: 5px;
+}
