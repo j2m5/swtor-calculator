@@ -1,8 +1,6 @@
 <template>
   <div class="main">
-    <div class="nav">
-      <router-link to="/" exact>Главная</router-link> / <router-link to="/dashboard" exact>Подробнее</router-link>
-    </div>
+    <the-navigation />
     <div class="main-wrapper">
       <div class="buffs-content">
         <div class="buffs-block">
@@ -280,11 +278,12 @@
 import isNotEmptyObject from '@/mixins/isNotEmptyObject'
 import openAndCloseModal from '@/mixins/openAndCloseModal'
 import { mapState, mapGetters } from 'vuex'
+const TheNavigation = () => import('@/components/generic/TheNavigation')
 const ItemPopper = () => import('@/components/specific/ItemPopper')
 const AbilityPopper = () => import('@/components/specific/AbilityPopper')
 export default {
   name: 'EquipmentComponent',
-  components: { ItemPopper, AbilityPopper },
+  components: { TheNavigation, ItemPopper, AbilityPopper },
   mixins: [isNotEmptyObject, openAndCloseModal],
   filters: {
     fixNumber (number) {

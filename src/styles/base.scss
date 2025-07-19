@@ -17,17 +17,6 @@
   margin: 5px 0;
 }
 
-.nav {
-  text-align: center;
-  a {
-    color: $lightGray;
-    font-size: 14px;
-    &.router-link-active {
-      color: #85827d;
-    }
-  }
-}
-
 .popper {
   background-color: rgba(0, 0, 0, 0.8);
   border: 1px solid #64b9d5;

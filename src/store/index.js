@@ -1,22 +1,22 @@
 import Vue from 'vue'
 import Vuex from 'vuex'
 import {
-  getBuffValue as buff,
   activateOrDeactivateBuff,
-  getRandomVendorComment,
-  isEquipable,
+  getBuffValue as buff,
   getItem,
+  getRandomVendorComment,
   hasModifications,
+  isEquipable,
   isEquippedItem
 } from '@/helpers'
 import {
-  calculatePercentFromRating as calc,
-  calculateEnergyRegen as calcRegen,
   calculateBonusDamageOrHealing as calcBonus,
-  calculateHealth
+  calculateEnergyRegen as calcRegen,
+  calculateHealth,
+  calculatePercentFromRating as calc
 } from '@/helpers/formulas'
 import { calculateStats } from '@/helpers/calculations'
-import { create, read } from '@/database'
+import { db } from '@/database'
 import modifiers from '@/data/math'
 import classBuffs from '@/data/classBuffs'
 import companionBuffs from '@/data/companionBuffs'
@@ -350,24 +350,30 @@ const store = new Vuex.Store({
       state.ownedItems.splice(index, 1)
       commit('clearSlot', payload)
     },
-    saveBuild ({ commit }, payload) {
-      return create(payload, 'builds').then(res => {
-        if (!Object.keys(res).includes('error')) {
-          return { key: res.name, message: 'Билд успешно сохранен' }
-        } else {
-          throw new Error(res.error)
-        }
-      })
+    async getCountBuilds () {
+      try {
+        return await db.builds.count()
+      } catch (e) {
+        throw new Error(e)
+      }
     },
-    loadBuild ({ commit }, payload) {
-      return read(payload, 'builds').then(res => {
-        if (res) {
-          commit('updateState', res)
-          return 'Билд успешно загружен'
-        } else {
-          throw new Error('Не удалось загрузить билд, проверь правильность ключа')
-        }
-      })
+    async saveBuild ({ commit }, payload) {
+      try {
+        return await db.builds.add(payload)
+      } catch (e) {
+        throw new Error(e)
+      }
+    },
+    async loadBuild ({ commit }, payload) {
+      try {
+        const { name, data } = await db.builds.where('key').equals(payload).first()
+
+        commit('updateState', Object.assign({}, data))
+
+        return `Билд "${name}" успешно загружен`
+      } catch (e) {
+        throw new Error(e)
+      }
     }
   }
 })

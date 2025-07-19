@@ -1,8 +1,6 @@
 <template>
   <div class="dashboard">
-    <div class="nav mt-5">
-      <router-link to="/" exact>Главная</router-link> / <router-link to="/dashboard" exact>Подробнее</router-link>
-    </div>
+    <the-navigation />
     <div class="charts">
       <div>
         <div>Соотношение статов (без учета баффов)</div>
@@ -23,11 +21,12 @@
 <script>
 import statAliases from '@/data/statAliases'
 import { getTertiaryStatsOfItem } from '@/helpers'
+const TheNavigation = () => import('@/components/generic/TheNavigation')
 const ThePie = () => import('@/components/generic/ThePie')
 const TheColumn = () => import('@/components/generic/TheColumn')
 export default {
   name: 'DashboardComponent',
-  components: { ThePie, TheColumn },
+  components: { TheNavigation, ThePie, TheColumn },
   data () {
     return {
       statAliases,

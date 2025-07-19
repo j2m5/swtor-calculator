@@ -196,3 +196,18 @@ function getValue (value) {
 
   return value
 }
+
+export function generateKey (size = 10) {
+  let s = ''
+
+  const randomChar = () => {
+    const n = Math.floor(Math.random() * 62)
+    if (n < 10) return n
+    if (n < 36) return String.fromCharCode(n + 55)
+    return String.fromCharCode(n + 61)
+  }
+
+  while (s.length < size) s += randomChar()
+
+  return s
+}

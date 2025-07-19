@@ -11,7 +11,7 @@ protocol.registerSchemesAsPrivileged([
 async function createWindow () {
   const win = new BrowserWindow({
     width: 1550,
-    height: 800,
+    height: 820,
     title: 'SWTOR Gear calculator',
     icon: 'src/assets/icon.png',
     webPreferences: {
@@ -23,6 +23,7 @@ async function createWindow () {
 
   if (process.env.WEBPACK_DEV_SERVER_URL) {
     await win.loadURL(process.env.WEBPACK_DEV_SERVER_URL)
+    win.webContents.openDevTools()
   } else {
     createProtocol('app')
     win.loadURL('app://./index.html')

@@ -20,8 +20,8 @@
     <div class="helper-wrapper">
       <helper-popper />
     </div>
-    <div class="firebase">
-      <the-button btn-text="Сохранить билд" @btn-click="saveBuild" />
+    <div class="db">
+      <the-button btn-text="Сохранить билд" @btn-click="enterNameModal = true" />
       <the-button btn-text="Загрузить билд" @btn-click="enterKeyModal = true" />
     </div>
     <confirm-modal
@@ -32,26 +32,26 @@
       @confirm="del(confirmData)"
       @reject="clearData"
     />
-    <the-modal :visible="dataKeyModal">
+    <the-modal :visible="enterNameModal">
       <template #header>
-        <div>Запиши и не теряй этот ключ, с его помощью сохраненный билд может быть загружен</div>
+        <div>Сохранить билд</div>
       </template>
       <template #main>
-        <the-text-input v-model="dataKey" />
+        <the-text-input v-model="enterName" placeholder="Введи имя билда" />
       </template>
       <template #footer>
         <div class="flex-container flex-center-axis-x flex-center-axis-y">
-          <the-button :btn-text="btnText" @btn-click="clipboardKey" />
-          <the-button btn-text="Закрыть" @btn-click="closeDataKeyModal" />
+          <the-button btn-text="Сохранить" @btn-click="saveBuild" />
+          <the-button btn-text="Закрыть" @btn-click="closeEnterNameModal" />
         </div>
       </template>
     </the-modal>
     <the-modal :visible="enterKeyModal">
       <template #header>
-        <div>Загрузить сохраненный билд по ключу</div>
+        <div>Загрузить билд</div>
       </template>
       <template #main>
-        <the-text-input v-model="enterKey" placeholder="Введи ключ" />
+        <the-text-input v-model="enterKey" placeholder="Введи уникальный ключ билда" />
       </template>
       <template #footer>
         <div class="flex-container flex-center-axis-x flex-center-axis-y">
@@ -73,7 +73,7 @@ import {
   isNotEmptyObject,
   isAlreadyBoundToItem,
   isAlreadyBusySlot,
-  isNotAllowedItem
+  isNotAllowedItem, generateKey
 } from '@/helpers'
 const ItemPopper = () => import('@/components/specific/ItemPopper')
 const HelperPopper = () => import('@/components/specific/HelperPopper')
@@ -94,11 +94,11 @@ export default {
   mixins: [getItem, openAndCloseModal],
   data () {
     return {
-      dataKeyModal: false,
+      enterNameModal: false,
       enterKeyModal: false,
       confirmModal: false,
+      enterName: '',
       enterKey: '',
-      dataKey: '',
       confirmData: {},
       btnText: 'Копировать ключ'
     }
@@ -143,42 +143,52 @@ export default {
       this.confirmModal = false
       this.confirmData = {}
     },
-    clipboardKey () {
-      navigator.clipboard.writeText(this.dataKey)
-      this.btnText = 'Скопировано'
-    },
-    closeDataKeyModal () {
-      this.dataKeyModal = false
-      this.dataKey = ''
-      this.btnText = 'Копировать ключ'
-    },
     closeEnterKeyModal () {
       this.enterKeyModal = false
       this.enterKey = ''
     },
-    saveBuild () {
-      const data = Object.assign({}, this.$store.state)
-      this.$store.dispatch('saveBuild', data).then(res => {
-        const { key, message } = res
-        this.dataKey = key
-        this.dataKeyModal = true
-        this.$toast.success(message)
-      }).catch(err => {
-        this.$toast.error(err.message)
-      })
+    closeEnterNameModal () {
+      this.enterNameModal = false
+      this.enterName = ''
     },
-    loadBuild () {
-      if (!this.enterKey.length) {
-        this.$toast.warning('Ключ не может быть пустым')
-        return
+    async saveBuild () {
+      try {
+        const form = {
+          key: generateKey(),
+          name: this.enterName,
+          data: this.$store.state
+        }
+
+        const countBuilds = await this.$store.dispatch('getCountBuilds')
+
+        if (countBuilds >= 7) {
+          this.$toast.warning('Количество сохраненных билдов не может быть больше 7')
+          return
+        }
+
+        await this.$store.dispatch('saveBuild', Object.assign({}, form))
+
+        this.closeEnterNameModal()
+        this.$toast.success('Успешно сохранено')
+      } catch (e) {
+        this.$toast.error(e.message)
       }
-      this.$store.dispatch('loadBuild', this.enterKey).then(res => {
+    },
+    async loadBuild () {
+      try {
+        if (!this.enterKey.length) {
+          this.$toast.warning('Ключ не может быть пустым')
+          return
+        }
+
+        const response = await this.$store.dispatch('loadBuild', this.enterKey)
+
         this.closeEnterKeyModal()
-        this.$toast.success(res)
-      }).catch(err => {
+        this.$toast.success(response)
+      } catch (e) {
         this.enterKey = ''
-        this.$toast.error(err.message)
-      })
+        this.$toast.error(e.message)
+      }
     }
   }
 }
@@ -210,7 +220,7 @@ export default {
       align-items: center;
       margin-top: 10px;
     }
-    .helper-wrapper, .firebase {
+    .helper-wrapper, .db {
       display: flex;
       justify-content: center;
     }
