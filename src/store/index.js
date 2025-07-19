@@ -31,6 +31,34 @@ const rows = 12
 const cols = 9
 const numberSlots = rows * cols
 
+export const defaultState = {
+  inventory: Array(numberSlots).fill('empty'),
+  ownedItems: [],
+  modifiableItem: {},
+  bindings: [],
+  equipment: [],
+  vendorComment: null,
+  balance: 2500000000,
+  user: {
+    mastery: 1150,
+    endurance: 1035,
+    power: 0,
+    ftPower: 0,
+    accuracy: 0,
+    alacrity: 0,
+    critical: 0,
+    shield: 0,
+    absorb: 0,
+    defense: 0
+  },
+  datacrons,
+  companionBuffs,
+  classBuffs,
+  stims,
+  guildBuffs,
+  disciplineBuffs
+}
+
 const basePercents = {
   accuracy: {
     white: 0,
@@ -63,33 +91,7 @@ const bonusDamageOrHealing = {
 }
 
 const store = new Vuex.Store({
-  state: {
-    inventory: Array(numberSlots).fill('empty'),
-    ownedItems: [],
-    modifiableItem: {},
-    bindings: [],
-    equipment: [],
-    vendorComment: null,
-    balance: 2500000000,
-    user: {
-      mastery: 1150,
-      endurance: 1035,
-      power: 0,
-      ftPower: 0,
-      accuracy: 0,
-      alacrity: 0,
-      critical: 0,
-      shield: 0,
-      absorb: 0,
-      defense: 0
-    },
-    datacrons,
-    companionBuffs,
-    classBuffs,
-    stims,
-    guildBuffs,
-    disciplineBuffs
-  },
+  state: Object.assign({}, defaultState),
   getters: {
     buffedMastery (state) {
       const datacron = buff(datacrons.find(x => x.attribute === 'mastery'))
@@ -371,6 +373,15 @@ const store = new Vuex.Store({
         commit('updateState', Object.assign({}, data))
 
         return `Билд "${name}" успешно загружен`
+      } catch (e) {
+        throw new Error(e)
+      }
+    },
+    async deleteBuild ({ commit }, payload) {
+      try {
+        await db.builds.where('key').equals(payload).delete()
+
+        return 'Билд удален'
       } catch (e) {
         throw new Error(e)
       }

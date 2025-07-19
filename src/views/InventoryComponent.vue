@@ -22,7 +22,7 @@
     </div>
     <div class="db">
       <the-button btn-text="Сохранить билд" @btn-click="enterNameModal = true" />
-      <the-button btn-text="Загрузить билд" @btn-click="enterKeyModal = true" />
+      <the-button btn-text="Сбросить билд" @btn-click="resetBuild" />
     </div>
     <confirm-modal
       :visible="confirmModal"
@@ -73,8 +73,11 @@ import {
   isNotEmptyObject,
   isAlreadyBoundToItem,
   isAlreadyBusySlot,
-  isNotAllowedItem, generateKey
+  isNotAllowedItem,
+  generateKey,
+  getRandomVendorComment
 } from '@/helpers'
+import { defaultState } from '@/store'
 const ItemPopper = () => import('@/components/specific/ItemPopper')
 const HelperPopper = () => import('@/components/specific/HelperPopper')
 const ConfirmModal = () => import('@/components/specific/ConfirmModal')
@@ -159,13 +162,6 @@ export default {
           data: this.$store.state
         }
 
-        const countBuilds = await this.$store.dispatch('getCountBuilds')
-
-        if (countBuilds >= 7) {
-          this.$toast.warning('Количество сохраненных билдов не может быть больше 7')
-          return
-        }
-
         await this.$store.dispatch('saveBuild', Object.assign({}, form))
 
         this.closeEnterNameModal()
@@ -189,6 +185,11 @@ export default {
         this.enterKey = ''
         this.$toast.error(e.message)
       }
+    },
+    resetBuild () {
+      this.$store.commit('updateState', defaultState)
+      this.$toast.success('Билд сброшен')
+      getRandomVendorComment('onLoad')
     }
   }
 }

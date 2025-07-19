@@ -9,7 +9,7 @@
       </div>
       <div class="description text-left">{{ data.description }}</div>
     </div>
-    <div slot="reference" class="item-inventory ability" :class="{ active: data.active }" @click="$emit('activate', data)">
+    <div slot="reference" class="item-inventory ability clickable" :class="{ active: data.active }" @click="$emit('activate', data)">
       <div
         class="item-img legendary"
         :style="{ backgroundImage: `url(${require('../../assets/' + data.icon)})` }"

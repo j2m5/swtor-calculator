@@ -1,7 +1,7 @@
 <template>
   <div ref="window" class="item-modal">
     <div class="modal-top">
-      <span @click="closeItemModal">&times;</span>
+      <span class="clickable" @click="closeItemModal">&times;</span>
     </div>
     <div class="modal-header">
       <item-popper

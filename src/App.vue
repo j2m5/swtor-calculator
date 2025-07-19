@@ -17,6 +17,7 @@ export default {
   @import "./styles/_variables.scss";
   html {
     background-color: $primary;
+    cursor: url("../src/assets/cursor.png") 8 3, auto;
   }
   body {
     border-image-slice: 27 27 27 27;
@@ -39,5 +40,8 @@ export default {
     height: inherit;
     margin: auto;
     overflow: hidden;
+  }
+  a, button, .clickable, .tags-input-badge {
+    cursor: url("../src/assets/pointer.png") 13 1, pointer !important;
   }
 </style>

@@ -14,7 +14,7 @@
     </div>
     <div class="filters">
       <div
-        class="clear-filter"
+        class="clear-filter clickable"
         title="Очистить фильтр"
         :style="{ backgroundImage: `url(${require('../assets/clear.png')})` }"
         @click="clearFilter"
@@ -44,7 +44,7 @@
           </item-popper>
         </div>
       </scrolly-viewport>
-      <scrolly-bar axis="y" />
+      <scrolly-bar axis="y" class="clickable" />
     </scrolly>
   </div>
 </template>

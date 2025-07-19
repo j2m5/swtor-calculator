@@ -30,6 +30,7 @@
     <div
       slot="reference"
       :class="referenceClass"
+      class="clickable"
       @click.right.prevent.exact="$emit('add-item')"
       @mouseup.ctrl.left.prevent.exact="$emit('modify-item', item)"
       @mouseup.alt.left.prevent.exact="$emit('delete-item', item)">
