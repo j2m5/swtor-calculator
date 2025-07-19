@@ -4,7 +4,7 @@
       <div class="popper-header">
         <img :src="require(`../../assets/${item.icon}`)" class="item-img" :class="item.quality" alt="">
         <div class="text-left">
-          <div class="item-name"><b>{{ item.name }}</b></div>
+          <div :class="`${item.quality}-text`" class="item-name"><b>{{ item.name }}</b></div>
           <div class="item-name"><b>Рейтинг {{ item.rating | getZeroRating }}</b></div>
         </div>
       </div>

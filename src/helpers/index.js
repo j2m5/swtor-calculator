@@ -21,6 +21,7 @@ export function getBuffValue (buff) {
   if (buff.active) {
     return buff.value
   }
+
   return 0
 }
 
@@ -36,17 +37,20 @@ export function activateOrDeactivateBuff (buff, list, index) {
 
 export function isEquipable (category) {
   const allowedTypes = equipmentLimits.map(x => x.category)
+
   return allowedTypes.includes(category)
 }
 
 export function isEquipped (category) {
   const data = equipmentLimits.find(x => x.category === category)
   const equipped = store.state.equipment.filter(x => x.category === category)
+
   return equipped.length >= data.limit
 }
 
 export function isEquippedItem (item) {
   const equippedItems = store.state.equipment.map(x => x.id)
+
   return equippedItems.includes(item.id)
 }
 
@@ -60,16 +64,19 @@ export function isNotEmptyObject (obj) {
 
 export function isAlreadyBoundToItem (item) {
   const ids = store.state.bindings.map(x => x.modificationId)
+
   return ids.includes(item.id)
 }
 
 export function isAlreadyBusySlot (category) {
   const busySlots = store.state.bindings.filter(x => x.itemId === store.state.modifiableItem.id).map(x => x.category)
+
   return busySlots.includes(category)
 }
 
 export function isNotAllowedItem (category) {
   const allowedSlots = store.state.modifiableItem.components
+
   return !allowedSlots.includes(category)
 }
 
@@ -94,10 +101,12 @@ export function getTertiaryStatsOfItem (item) {
     data.sort((x, y) => tertiary.indexOf(x.alias) - tertiary.indexOf(y.alias))
     const result = data.map(x => x.value)
     result.unshift(item.category)
+
     return result
   } else {
     const empty = Array(tertiary.length).fill(0)
     empty.unshift(item.category)
+
     return empty
   }
 }
@@ -109,6 +118,7 @@ export function simplifyStats (item) {
     const tmp = el.split(':')[1].trim()
     numbers += ` +${tmp}`
   })
+
   return numbers
 }
 
@@ -141,6 +151,7 @@ export function formatStats (item) {
     const { alias } = stat
     group[alias] = group[alias] ?? []
     group[alias].push(stat)
+
     return group
   }, {})
 
@@ -156,6 +167,7 @@ export function formatStats (item) {
   }
 
   calculated.sort((x, y) => stats.indexOf(x.alias) - stats.indexOf(y.alias))
+
   return calculated
 }
 
@@ -172,6 +184,7 @@ export function multiFilter (array, filters) {
   return array.filter(item => {
     return filterKeys.every(key => {
       if (!filters[key].length) return true
+
       return filters[key].find(filter => getValue(filter) === getValue(item[key]))
     })
   })
@@ -180,5 +193,6 @@ export function multiFilter (array, filters) {
 function getValue (value) {
   if (typeof value === 'string') value = value.toUpperCase()
   if (!isNaN(value)) value = Number(value)
+
   return value
 }

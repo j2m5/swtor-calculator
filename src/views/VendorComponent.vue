@@ -50,12 +50,7 @@
 </template>
 
 <script>
-import mods from '@/data/mods'
 import equipment from '@/data/equipment'
-import ears from '@/data/ears'
-import legendaries from '@/data/legendaries'
-import relics from '@/data/relics'
-import oldEquipment from '@/data/oldEquipment'
 import vendorComments from '@/data/vendorComments'
 import { getRandomVendorComment, multiFilter } from '@/helpers'
 import '@voerro/vue-tagsinput/dist/style.css'
@@ -96,10 +91,8 @@ export default {
         { key: 'enhancement', value: 'Enhancement', prop: 'category' },
         { key: 'augment', value: 'Augment', prop: 'category' },
         { key: 'crystal', value: 'Crystal', prop: 'category' },
-        { key: '330', value: '330', prop: 'rating' },
-        { key: '332', value: '332', prop: 'rating' },
-        { key: '334', value: '334', prop: 'rating' },
-        { key: '336', value: '336', prop: 'rating' },
+        { key: '340', value: '340', prop: 'rating' },
+        { key: '344', value: '344', prop: 'rating' },
         { key: 'prototype', value: 'Prototype', prop: 'quality' },
         { key: 'artifact', value: 'Artifact', prop: 'quality' },
         { key: 'legendary', value: 'Legendary', prop: 'quality' }
@@ -110,29 +103,16 @@ export default {
         quality: []
       },
       showAlfe: true,
-      mods,
       equipment,
-      ears,
-      legendaries,
-      relics,
-      oldEquipment,
       vendorComments
     }
   },
   computed: {
-    combinedItems () {
-      return this.equipment
-        .concat(this.ears)
-        .concat(this.legendaries)
-        .concat(this.relics)
-        .concat(this.mods)
-        .concat(this.oldEquipment)
-    },
     filteredItems () {
       if (this.query.category.length || this.query.rating.length || this.query.quality.length) {
-        return multiFilter(this.combinedItems, this.query)
+        return multiFilter(this.equipment, this.query)
       } else {
-        return this.combinedItems
+        return this.equipment
       }
     }
   },
@@ -208,6 +188,7 @@ export default {
         position: absolute;
         right: 5px;
         z-index: 1000;
+        transform: scale(0.7);
       }
     }
     .vendor-comment {
