@@ -94,47 +94,49 @@ const store = new Vuex.Store({
   state: Object.assign({}, defaultState),
   getters: {
     buffedMastery (state) {
-      const datacron = buff(datacrons.find(x => x.attribute === 'mastery'))
-      const stim = buff(stims.find(x => x.attribute === 'mastery')).mastery || 0
-      return state.user.mastery + datacron + stim
+      const datacron = buff(state.datacrons.find(x => x.attribute === 'mastery'))
+      const stim = buff(state.stims.find(x => x.attribute === 'mastery')).mastery || 0
+      const classBuff = Math.ceil(state.user.mastery * buff(state.classBuffs.find(x => x.attribute === 'mastery')))
+      return state.user.mastery + datacron + stim + classBuff
     },
     buffedEndurance (state) {
-      const datacron = buff(datacrons.find(x => x.attribute === 'endurance'))
-      const stim = buff(stims.find(x => x.attribute === 'endurance')).endurance || 0
-      return state.user.endurance + datacron + stim
+      const datacron = buff(state.datacrons.find(x => x.attribute === 'endurance'))
+      const stim = buff(state.stims.find(x => x.attribute === 'endurance')).endurance || 0
+      const classBuff = Math.ceil(state.user.endurance * buff(state.classBuffs.find(x => x.attribute === 'endurance')))
+      return state.user.endurance + datacron + stim + classBuff
     },
     buffedAccuracy (state) {
-      const stim = buff(stims.find(x => x.attribute === 'accuracy')).accuracy || 0
+      const stim = buff(state.stims.find(x => x.attribute === 'accuracy')).accuracy || 0
       return state.user.accuracy + stim
     },
     buffedCritical (state) {
-      const stim = buff(stims.find(x => x.attribute === 'accuracy')).critical || 0
+      const stim = buff(state.stims.find(x => x.attribute === 'accuracy')).critical || 0
       return state.user.critical + stim
     },
     buffedDefense (state) {
-      const stim = buff(stims.find(x => x.attribute === 'endurance')).defense || 0
+      const stim = buff(state.stims.find(x => x.attribute === 'endurance')).defense || 0
       return state.user.defense + stim
     },
     buffedPower (state) {
-      const stim = buff(stims.find(x => x.attribute === 'mastery')).power || 0
+      const stim = buff(state.stims.find(x => x.attribute === 'mastery')).power || 0
       return state.user.power + stim
     },
     alacrityPercent (state) {
       const alacrity = modifiers.find(x => x.attribute === 'alacrity')
-      const discipline = buff(disciplineBuffs.find(x => x.attribute === 'alacrity')) * 100
-      const guild = buff(guildBuffs.find(x => x.attribute === 'alacrity')) * 100
+      const discipline = buff(state.disciplineBuffs.find(x => x.attribute === 'alacrity')) * 100
+      const guild = buff(state.guildBuffs.find(x => x.attribute === 'alacrity')) * 100
       return basePercents.alacrity + calc(state.user.alacrity, alacrity.cap, alacrity.divisor) + discipline + guild
     },
     accuracyWhitePercent (state, getters) {
       const accuracy = modifiers.find(x => x.attribute === 'accuracy')
-      const companionBuff = buff(companionBuffs.find(x => x.attribute === 'meleeTank')) * 100
-      const discipline = buff(disciplineBuffs.find(x => x.attribute === 'accuracy')) * 100
+      const companionBuff = buff(state.companionBuffs.find(x => x.attribute === 'meleeTank')) * 100
+      const discipline = buff(state.disciplineBuffs.find(x => x.attribute === 'accuracy')) * 100
       return basePercents.accuracy.white + calc(getters.buffedAccuracy, accuracy.cap, accuracy.divisor) + companionBuff + discipline
     },
     accuracyYellowPercent (state, getters) {
       const accuracy = modifiers.find(x => x.attribute === 'accuracy')
-      const companionBuff = buff(companionBuffs.find(x => x.attribute === 'meleeTank')) * 100
-      const discipline = buff(disciplineBuffs.find(x => x.attribute === 'accuracy')) * 100
+      const companionBuff = buff(state.companionBuffs.find(x => x.attribute === 'meleeTank')) * 100
+      const discipline = buff(state.disciplineBuffs.find(x => x.attribute === 'accuracy')) * 100
       return basePercents.accuracy.yellow + calc(getters.buffedAccuracy, accuracy.cap, accuracy.divisor) + companionBuff + discipline
     },
     criticalChancePercent (state, getters) {
@@ -142,14 +144,14 @@ const store = new Vuex.Store({
       const critical = modifiers.find(x => x.attribute === 'critical')
       const fromMastery = calc(getters.buffedMastery, mastery.cap, mastery.divisor)
       const fromCritical = calc(getters.buffedCritical, critical.cap, critical.divisor)
-      const companionBuff = buff(companionBuffs.find(x => x.attribute === 'rangedDps')) * 100
-      const classBuff = buff(classBuffs.find(x => x.attribute === 'critical')) * 100
-      const guildBuff = buff(guildBuffs.find(x => x.attribute === 'critical')) * 100
+      const companionBuff = buff(state.companionBuffs.find(x => x.attribute === 'rangedDps')) * 100
+      const classBuff = buff(state.classBuffs.find(x => x.attribute === 'critical')) * 100
+      const guildBuff = buff(state.guildBuffs.find(x => x.attribute === 'critical')) * 100
       return basePercents.criticalChance + fromMastery + fromCritical + companionBuff + classBuff + guildBuff
     },
     criticalMultiplierPercent (state) {
       const critical = modifiers.find(x => x.attribute === 'critical')
-      const companionBuff = buff(companionBuffs.find(x => x.attribute === 'meleeDps')) * 100
+      const companionBuff = buff(state.companionBuffs.find(x => x.attribute === 'meleeDps')) * 100
       return basePercents.criticalMultiplier + calc(state.user.critical, critical.cap, critical.divisor) + companionBuff
     },
     defensePercent (state) {
@@ -168,29 +170,29 @@ const store = new Vuex.Store({
       return calcRegen(baseValues.energyRegen, getters.alacrityPercent)
     },
     health (state, getters) {
-      const x = buff(classBuffs.find(x => x.attribute === 'endurance'))
-      const y = buff(companionBuffs.find(x => x.attribute === 'rangedTank'))
+      const x = buff(state.classBuffs.find(x => x.attribute === 'endurance'))
+      const y = buff(state.companionBuffs.find(x => x.attribute === 'rangedTank'))
       const result = calculateHealth(baseValues.health, getters.buffedEndurance, x, y)
       return Math.ceil(result)
     },
     bonusDamageWhite (state, getters) {
-      const x = buff(classBuffs.find(x => x.attribute === 'mastery'))
+      const x = buff(state.classBuffs.find(x => x.attribute === 'mastery'))
       const y = 0
-      const z = buff(classBuffs.find(x => x.attribute === 'power'))
+      const z = buff(state.classBuffs.find(x => x.attribute === 'power'))
       const result = calcBonus(getters.buffedMastery, state.user.power, bonusDamageOrHealing.damage.mastery, bonusDamageOrHealing.damage.power, x, y, z)
       return Math.ceil(result)
     },
     bonusDamageYellow (state, getters) {
-      const x = buff(classBuffs.find(x => x.attribute === 'mastery'))
+      const x = buff(state.classBuffs.find(x => x.attribute === 'mastery'))
       const y = 0
-      const z = buff(classBuffs.find(x => x.attribute === 'power'))
+      const z = buff(state.classBuffs.find(x => x.attribute === 'power'))
       const result = calcBonus(getters.buffedMastery, state.user.power + state.user.ftPower, bonusDamageOrHealing.damage.mastery, bonusDamageOrHealing.damage.power, x, y, z)
       return Math.ceil(result)
     },
     bonusHealing (state, getters) {
-      const x = buff(classBuffs.find(x => x.attribute === 'mastery'))
+      const x = buff(state.classBuffs.find(x => x.attribute === 'mastery'))
       const y = 0
-      const z = buff(classBuffs.find(x => x.attribute === 'power'))
+      const z = buff(state.classBuffs.find(x => x.attribute === 'power'))
       const result = calcBonus(getters.buffedMastery, state.user.power + state.user.ftPower, bonusDamageOrHealing.healing.mastery, bonusDamageOrHealing.healing.power, x, y, z)
       return Math.ceil(result)
     }

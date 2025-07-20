@@ -4,6 +4,10 @@ export function calculatePercentFromRating (rating, cap, divisor, level = 80) {
   return (cap * (1 - Math.pow(x, y))) * 100
 }
 
+export function calculateRatingFromPercent (percent, cap, divisor, level = 80) {
+  return (Math.log(1 - (percent / 100) / cap) / Math.log(1 - 0.01 / cap)) * level * divisor
+}
+
 export function calculateEnergyRegen (base, percent) {
   return base * (1 + (percent) / 100)
 }
