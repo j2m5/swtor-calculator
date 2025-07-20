@@ -32,6 +32,7 @@ export default {
     border-radius: 15px;
     color: $lightGray;
     cursor: pointer;
+    font-family: 'Open Sans', Arial, Helvetica, Avenir, sans-serif;
     outline: none;
     margin: 0 5px;
     padding: 5px 10px;

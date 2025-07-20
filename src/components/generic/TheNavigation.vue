@@ -16,6 +16,10 @@ export default {
     a {
       color: #d4d1cb;
       font-size: 14px;
+      text-decoration: none;
+      &:hover {
+        text-decoration: underline;
+      }
       &.router-link-active {
         color: #85827d;
       }

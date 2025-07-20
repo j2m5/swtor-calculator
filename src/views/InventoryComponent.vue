@@ -188,6 +188,7 @@ export default {
     },
     resetBuild () {
       this.$store.commit('updateState', defaultState)
+      this.$store.commit('deleteAll')
       this.$toast.success('Билд сброшен')
       getRandomVendorComment('onLoad')
     }

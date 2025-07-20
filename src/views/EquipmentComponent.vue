@@ -418,7 +418,7 @@ export default {
           flex-wrap: wrap;
           justify-content: space-around;
           font-size: 12px;
-          width: 300px;
+          width: 350px;
           .box {
             display: flex;
             flex-direction: column;

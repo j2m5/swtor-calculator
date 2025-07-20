@@ -216,6 +216,7 @@ export default {
     width: 230px;
     input[type="text"] {
       color: #d4d1cb;
+      font-family: 'Open Sans', Arial, Helvetica, Avenir, sans-serif;
     }
     .tags-input-badge-selected-default {
       color: #d4d1cb;

@@ -219,6 +219,11 @@ const store = new Vuex.Store({
     deleteItem (state, payload) {
       state.ownedItems.splice(payload, 1)
     },
+    deleteAll (state) {
+      state.ownedItems = []
+      state.equipment = []
+      state.inventory = Array(numberSlots).fill('empty')
+    },
     bindItem (state, payload) {
       state.bindings.push(payload)
     },
