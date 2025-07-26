@@ -44,8 +44,4 @@ export default {
   a, button, .clickable, .tags-input-badge {
     cursor: url("../src/assets/pointer.png") 13 1, pointer !important;
   }
-  @font-face {
-    font-family: 'Open Sans';
-    src: url("../src/assets/OpenSans-Regular.ttf");
-  }
 </style>

@@ -15,6 +15,18 @@ const routes = [
     component: () => import('../views/DashboardComponent')
   },
   {
+    path: '/operations',
+    name: 'Operations',
+    component: () => import('../views/OperationsComponent'),
+    children: [
+      {
+        path: 'ev',
+        name: 'EternityVault',
+        component: () => import('../views/operations/EternityVault')
+      }
+    ]
+  },
+  {
     path: '/builds',
     name: 'Builds',
     component: () => import('../views/BuildsComponent')
