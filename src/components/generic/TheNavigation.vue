@@ -2,8 +2,8 @@
   <div class="nav">
     <router-link :to="{ name: 'Main' }" exact>Главная</router-link> /
     <router-link :to="{ name: 'Dashboard' }" exact>Подробнее</router-link> /
-    <router-link :to="{ name: 'Operations' }">Операции</router-link> /
-    <router-link :to="{ name: 'Builds' }">Сохраненные билды</router-link>
+    <router-link :to="{ name: 'Operations' }" exact>Операции</router-link> /
+    <router-link :to="{ name: 'Builds' }" exact>Сохраненные билды</router-link>
   </div>
 </template>
 

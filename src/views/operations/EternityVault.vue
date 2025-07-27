@@ -1,31 +1,26 @@
 <template>
   <div class="ev-wrapper">
     <div class="preview">
-      <div class="matrix">
-        <div v-for="(item, index) in matrix" :key="index" class="matrix-item">
-          <template v-if="index === 2">
-            <img :src="require('../../assets/ev-green.png')" alt="">
-          </template>
-          <template v-if="index === 5">
-            <img :src="require('../../assets/ev-blue.png')" alt="">
-          </template>
-          <template v-if="index === 9">
-            <img :src="require('../../assets/ev-red.png')" alt="">
-          </template>
-          <template v-if="index === 15">
-            <img :src="require('../../assets/ev-yellow.png')" alt="">
-          </template>
-          <template v-if="index === 19">
-            <img :src="require('../../assets/ev-purple.png')" alt="">
-          </template>
-          <template v-if="index === 22">
-            <img :src="require('../../assets/ev-white.png')" alt="">
-          </template>
+      <div class="current-row">
+        <h1>{{ currentRow + 1 }}</h1>
+        <div>Текущий ряд</div>
+      </div>
+      <div :style="rotation" class="matrix-wrapper">
+        <div class="matrix">
+          <div v-for="(item, index) in preview" :key="index" :style="itemRotation" class="matrix-item">
+            <img v-if="item" :src="require(`../../assets/ev-${item}.png`)" alt="">
+          </div>
         </div>
       </div>
     </div>
     <div class="pylon">
       <div class="pylon-columns">
+        <div :style="{ visibility: mode === 'calibration' ? 'visible' : 'hidden' }" class="pylon-calibration-col">
+          <div v-for="(item, index) in pylon.firstCol" :key="index">
+            <the-button btn-text="Влево (Л/П)" @btn-click="calibrate('left', index)" />
+            <the-button btn-text="Влево (Центр)" @btn-click="calibrateCenter('left', index)" />
+          </div>
+        </div>
         <div class="pylon-col">
           <div v-for="(color, key) in pylon.firstCol" :key="key + 10">
             <img :src="require(`../../assets/${getColorImageName(color)}`)" alt="">
@@ -41,15 +36,36 @@
             <img :src="require(`../../assets/${getColorImageName(color)}`)" alt="">
           </div>
         </div>
+        <div :style="{ visibility: mode === 'calibration' ? 'visible' : 'hidden' }" class="pylon-calibration-col">
+          <div v-for="(item, index) in pylon.firstCol" :key="index">
+            <the-button btn-text="Вправо (Л/П)" @btn-click="calibrate('right', index)" />
+            <the-button btn-text="Вправо (Центр)" @btn-click="calibrateCenter('right', index)" />
+          </div>
+        </div>
       </div>
       <div class="pylon-buttons">
+        <div class="row">
+          <div class="mode">
+            <the-button btn-text="Режим калибровки пилона" @btn-click="setMode('calibration')" />
+          </div>
+          <div class="mode">
+            <the-button btn-text="Режим вращения пилона" @btn-click="setMode('rotation')" />
+          </div>
+        </div>
+      </div>
+      <div v-if="mode === 'rotation'" class="pylon-buttons">
         <div class="row">
           <the-button btn-text="Влево" @btn-click="rotate('left')" />
           <the-button btn-text="Фиксация" @btn-click="commit" />
           <the-button btn-text="Вправо" @btn-click="rotate('right')" />
         </div>
         <div class="row">
-          <the-button btn-text="Сбросить" @btn-click="reset" />
+          <the-button btn-text="Сброс" @btn-click="reset" />
+        </div>
+        <div class="rotation-info">
+          <div>Для сборки текущего ряда нужно повернуть пилон:</div>
+          <div>{{ steps.leftStepsCount }} раз(а) влево, или</div>
+          <div>{{ steps.rightStepsCount }} раз(а) вправо</div>
         </div>
       </div>
     </div>
@@ -63,25 +79,61 @@ export default {
   components: { TheButton },
   data () {
     return {
+      mode: 'calibration',
       pylon: {},
       matrix: Array(25).fill(null),
-      colors: ['white', 'yellow', 'blue', 'green', 'red', 'purple'],
+      colors: ['white', 'purple', 'yellow', 'red', 'blue', 'green'],
       commits: [false, false, false, false],
-      currentRow: 3
+      currentRow: 3,
+      rotationDeg: 0
+    }
+  },
+  computed: {
+    steps () {
+      const { current } = this.getMetadata(this.pylon.secondCol)
+      const target = this.colors.indexOf(this.pylon.firstCol[this.currentRow])
+
+      const total = this.colors.length
+
+      const leftStepsCount = (current - target + total) % total
+      const rightStepsCount = (target - current + total) % total
+
+      return { leftStepsCount, rightStepsCount }
+    },
+    preview () {
+      const indexes = [2, 5, 9, 15, 19, 22].reverse()
+
+      indexes.forEach((el, index) => {
+        this.matrix.splice(el, 1, this.colors[index])
+      })
+
+      return this.matrix
+    },
+    rotation () {
+      return {
+        transform: `rotate(${this.rotationDeg}deg)`,
+        transition: 'transform 0.5s ease-in-out'
+      }
+    },
+    itemRotation () {
+      return {
+        transform: `rotate(${-this.rotationDeg}deg)`,
+        transition: 'transform 0.5s ease-in-out'
+      }
     }
   },
   created () {
-    this.setPylon()
+    this.getPylon()
   },
   methods: {
     rotate (to) {
-      const allowedDirections = ['left', 'right']
+      if (!this.validate(['left', 'right'], to)) return
 
-      if (!allowedDirections.includes(to)) return
+      const { next, previous } = this.getMetadata(this.pylon.secondCol)
 
-      const current = this.colors.indexOf(this.pylon.secondCol[this.currentRow])
-      const next = current !== this.colors.length - 1 ? current + 1 : 0
-      const previous = current !== 0 ? current - 1 : this.colors.length - 1
+      const step = 60
+
+      this.rotationDeg += to === 'left' ? -step : step
 
       if (!this.commits[this.currentRow] && this.currentRow > -1) {
         if (to === 'left') {
@@ -91,6 +143,30 @@ export default {
         }
       }
     },
+    calibrate (to, row) {
+      if (!this.validate(['left', 'right'], to)) return
+
+      const { next, previous } = this.getMetadata(this.pylon.firstCol, row)
+
+      if (to === 'left') {
+        this.pylon.firstCol.splice(row, 1, this.colors[previous])
+        this.pylon.thirdCol.splice(row, 1, this.colors[previous])
+      } else {
+        this.pylon.firstCol.splice(row, 1, this.colors[next])
+        this.pylon.thirdCol.splice(row, 1, this.colors[next])
+      }
+    },
+    calibrateCenter (to, row) {
+      if (!this.validate(['left', 'right'], to)) return
+
+      const { next, previous } = this.getMetadata(this.pylon.secondCol, row)
+
+      if (to === 'left') {
+        this.pylon.secondCol.splice(row, 1, this.colors[previous])
+      } else {
+        this.pylon.secondCol.splice(row, 1, this.colors[next])
+      }
+    },
     commit () {
       if (this.currentRow < 0) {
         this.$toast.warning('Фиксация невозможна')
@@ -98,7 +174,7 @@ export default {
       }
 
       if (!this.checkRow()) {
-        this.$toast.warning('Все три цвета должны совпадать')
+        this.$toast.warning('Все цвета должны совпадать')
         return
       }
 
@@ -109,14 +185,27 @@ export default {
     reset () {
       this.commits = [false, false, false, false]
       this.currentRow = 3
-      this.setPylon()
+
+      this.getPylon()
     },
-    setPylon () {
+    getPylon () {
       const firstCol = this.getRandomColors()
       const secondCol = this.getRandomColors()
       const thirdCol = [...firstCol]
 
       this.pylon = { firstCol, secondCol, thirdCol }
+    },
+    setMode (mode) {
+      if (!this.validate(['calibration', 'rotation'], mode)) return
+
+      this.mode = mode
+    },
+    getMetadata (column, row = null) {
+      const current = row !== null ? this.colors.indexOf(column[row]) : this.colors.indexOf(column[this.currentRow])
+      const next = current !== this.colors.length - 1 ? current + 1 : 0
+      const previous = current !== 0 ? current - 1 : this.colors.length - 1
+
+      return { current, next, previous }
     },
     getRandomColors () {
       const shuffled = [...this.colors]
@@ -132,8 +221,15 @@ export default {
     getColorImageName (color) {
       return `ev-${color}.png`
     },
+    validate (array, input) {
+      return !!array.includes(input)
+    },
     checkRow () {
-      const row = [this.pylon.firstCol[this.currentRow], this.pylon.secondCol[this.currentRow], this.pylon.thirdCol[this.currentRow]]
+      const row = [
+        this.pylon.firstCol[this.currentRow],
+        this.pylon.secondCol[this.currentRow],
+        this.pylon.thirdCol[this.currentRow]
+      ]
 
       return !!row.every((color) => color === row[0])
     }
@@ -147,9 +243,24 @@ export default {
     justify-content: space-around;
     margin-top: 10px;
     .preview {
-      background: url("../../assets/hexagon.png") no-repeat 0 22%;
-      background-size: 450px;
+      background: url("../../assets/hexagon.png") no-repeat 0 45%;
+      background-size: 440px;
+      position: relative;
+      height: 100%;
       width: 450px;
+      .current-row {
+        position: absolute;
+        left: 38%;
+        top: 33%;
+        text-align: center;
+        h1 {
+          font-size: 75px;
+          margin: 0;
+        }
+        div {
+          font-size: 14px;
+        }
+      }
       .matrix {
         display: flex;
         flex-wrap: wrap;
@@ -164,6 +275,7 @@ export default {
       }
     }
     .pylon {
+      height: 100%;
       .pylon-columns {
         display: flex;
         justify-content: center;
@@ -173,11 +285,26 @@ export default {
         flex-direction: column;
         margin: 10px;
       }
+      .pylon-calibration-col {
+        display: flex;
+        flex-direction: column;
+        justify-content: space-around;
+        div {
+          button {
+            margin: 5px 0;
+            display: block;
+          }
+        }
+      }
       .pylon-buttons {
         .row {
           display: flex;
           justify-content: center;
           margin-top: 20px;
+        }
+        .rotation-info {
+          margin-top: 10px;
+          text-align: center;
         }
       }
     }
