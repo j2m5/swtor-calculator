@@ -5,9 +5,9 @@
         <h1>{{ currentRow + 1 }}</h1>
         <div>Текущий ряд</div>
       </div>
-      <div :style="rotation" class="matrix-wrapper">
+      <div class="matrix-wrapper">
         <div class="matrix">
-          <div v-for="(item, index) in preview" :key="index" :style="itemRotation" class="matrix-item">
+          <div v-for="(item, index) in preview" :key="index" class="matrix-item">
             <img v-if="item" :src="require(`../../assets/ev-${item}.png`)" alt="">
           </div>
         </div>
@@ -108,18 +108,6 @@ export default {
       })
 
       return this.matrix
-    },
-    rotation () {
-      return {
-        transform: `rotate(${this.rotationDeg}deg)`,
-        transition: 'transform 0.5s ease-in-out'
-      }
-    },
-    itemRotation () {
-      return {
-        transform: `rotate(${-this.rotationDeg}deg)`,
-        transition: 'transform 0.5s ease-in-out'
-      }
     }
   },
   created () {
