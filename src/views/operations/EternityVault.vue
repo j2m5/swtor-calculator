@@ -1,6 +1,8 @@
 <template>
   <div class="ev-wrapper">
-    <div class="preview">
+    <div
+      :style="{ background: `url('${require('../../assets/hexagon.png')}') no-repeat 0% 45%`, backgroundSize: '440px' }"
+      class="preview">
       <div class="current-row">
         <h1>{{ currentRow + 1 }}</h1>
         <div>Текущий ряд</div>
@@ -15,10 +17,15 @@
     </div>
     <div class="pylon">
       <div class="pylon-columns">
-        <div :style="{ visibility: mode === 'calibration' ? 'visible' : 'hidden' }" class="pylon-calibration-col">
+        <div v-if="mode === 'calibration'" class="pylon-calibration-col">
           <div v-for="(item, index) in pylon.firstCol" :key="index">
             <the-button btn-text="Влево (Л/П)" @btn-click="calibrate('left', index)" />
             <the-button btn-text="Влево (Центр)" @btn-click="calibrateCenter('left', index)" />
+          </div>
+        </div>
+        <div v-else class="pylon-calibration-col">
+          <div v-for="(item, index) in stepsForEachRow" :key="index" style="display: flex; justify-content: center;">
+            <span>{{ item.leftStepsCount }} раз(а)</span>
           </div>
         </div>
         <div class="pylon-col">
@@ -36,10 +43,15 @@
             <img :src="require(`../../assets/${getColorImageName(color)}`)" alt="">
           </div>
         </div>
-        <div :style="{ visibility: mode === 'calibration' ? 'visible' : 'hidden' }" class="pylon-calibration-col">
+        <div v-if="mode === 'calibration'" class="pylon-calibration-col">
           <div v-for="(item, index) in pylon.firstCol" :key="index">
             <the-button btn-text="Вправо (Л/П)" @btn-click="calibrate('right', index)" />
             <the-button btn-text="Вправо (Центр)" @btn-click="calibrateCenter('right', index)" />
+          </div>
+        </div>
+        <div v-else class="pylon-calibration-col">
+          <div v-for="(item, index) in stepsForEachRow" :key="index" style="display: flex; justify-content: center;">
+            <span>{{ item.rightStepsCount }} раз(а)</span>
           </div>
         </div>
       </div>
@@ -82,7 +94,7 @@ export default {
       mode: 'calibration',
       pylon: {},
       matrix: Array(25).fill(null),
-      colors: ['white', 'purple', 'yellow', 'red', 'blue', 'green'],
+      colors: ['red', 'purple', 'white', 'yellow', 'blue', 'green'],
       commits: [false, false, false, false],
       currentRow: 3,
       rotationDeg: 0
@@ -99,6 +111,23 @@ export default {
       const rightStepsCount = (target - current + total) % total
 
       return { leftStepsCount, rightStepsCount }
+    },
+    stepsForEachRow () {
+      const result = []
+
+      for (let i = 0; i < 4; i++) {
+        const { current } = this.getMetadata(this.pylon.secondCol, i)
+        const target = this.colors.indexOf(this.pylon.firstCol[i])
+
+        const total = this.colors.length
+
+        const leftStepsCount = (current - target + total) % total
+        const rightStepsCount = (target - current + total) % total
+
+        result.push({ leftStepsCount, rightStepsCount })
+      }
+
+      return result
     },
     preview () {
       const indexes = [2, 5, 9, 15, 19, 22].reverse()
@@ -231,8 +260,6 @@ export default {
     justify-content: space-around;
     margin-top: 10px;
     .preview {
-      background: url("../../assets/hexagon.png") no-repeat 0 45%;
-      background-size: 440px;
       position: relative;
       height: 100%;
       width: 450px;
@@ -277,6 +304,7 @@ export default {
         display: flex;
         flex-direction: column;
         justify-content: space-around;
+        width: 125px;
         div {
           button {
             margin: 5px 0;
