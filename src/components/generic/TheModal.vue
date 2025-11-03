@@ -21,9 +21,7 @@ export default {
     },
     contentStyle: {
       type: Object,
-      default: () => {
-        return {}
-      }
+      default: () => {}
     }
   },
   data () {

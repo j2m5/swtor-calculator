@@ -93,7 +93,6 @@
             <div class="stat-section">Critical multiplier: {{ criticalMultiplierPercent | fixNumber }}%</div>
             <div class="stat-section">Energy regen rate: {{ energyRegen | fixNumber }}</div>
             <div class="stat-section">Alacrity: {{ alacrityPercent | fixNumber }}%</div>
-
           </div>
         </div>
         <div class="equipment">
@@ -267,27 +266,155 @@
                 />
               </div>
             </div>
+            <div class="ai-helper">
+              <the-button btn-text="Спросить ИИ" @btn-click="openAIModal" />
+            </div>
           </div>
         </div>
       </div>
     </div>
+    <the-modal :visible="aiModal">
+      <template #header>
+        <div>Добро пожаловать! Я Alfe AI твой помощник в сборке лучшего гира в SWTOR!</div>
+      </template>
+      <template #main>
+        <scrolly class="scrollbar" :parentScroll="false" :style="{ width: '1000px', height: '500px' }">
+          <scrolly-viewport>
+            <div v-if="visibleHistory.length" class="chat">
+              <div v-for="message in visibleHistory" :key="message.id" class="ai-comment">
+                <div class="ai-comment-head">
+                  <div class="ai-avatar">
+                    <img src="../assets/alfe.png" alt="">
+                  </div>
+                  <div class="ai-name">
+                    <div>Alfe AI</div>
+                  </div>
+                </div>
+                <div class="ai-comment-content">
+                  <div v-if="Array.isArray(message.response)" class="ai-response">
+                    <div v-for="item in alfeAI.reasoning.map((x) => x.response)" :key="item.id">
+                      <vue-typed-js :strings="[item]" :type-speed="10" :start-delay="3000" :show-cursor="false">
+                        <i class="typing" style="margin: 5px 0; font-size: 12px;" />
+                      </vue-typed-js>
+                    </div>
+                    <div v-for="(item, index) in message.response" :key="index">
+                      <vue-typed-js :strings="[item]" :type-speed="12" :start-delay="3000" :show-cursor="false">
+                        <span class="typing" />
+                      </vue-typed-js>
+                    </div>
+                    <div style="margin: 5px 0;">
+                      <the-button btn-text="Применить полученный билд?" @btn-click="applyAIGeneratedBuild" />
+                    </div>
+                  </div>
+                  <div v-else class="ai-response">
+                    <vue-typed-js :strings="[message.response]" :type-speed="10" :show-cursor="false">
+                      <span class="typing" />
+                    </vue-typed-js>
+                  </div>
+                </div>
+              </div>
+              <div class="hr" />
+            </div>
+          </scrolly-viewport>
+          <scrolly-bar axis="y" />
+        </scrolly>
+        <div class="user-request">
+          <div>Собери билд для класса:</div>
+          <div>
+            <select v-model="selectedClass">
+              <option v-for="(item, key) in classes" :key="key" :value="item">{{ item }}</option>
+            </select>
+          </div>
+          <div>для дисциплины:</div>
+          <div>
+            <select v-model="selectedDiscipline">
+              <option v-for="(item, key) in filteredDisciplines" :key="key" :value="item.name">{{ item.name }}</option>
+            </select>
+          </div>
+          <div>используй аугменты рейтинга:</div>
+          <div>
+            <select v-model="selectedAugmentRating">
+              <option v-for="(rating, key) in augmentRatings" :key="key" :value="rating">{{ rating }}</option>
+            </select>
+          </div>
+          <div class="mt-5">
+            <the-button btn-text="Отправить" @btn-click="ask" />
+          </div>
+        </div>
+      </template>
+      <template #footer>
+        <div class="flex-container flex-center-axis-x flex-center-axis-y">
+          <the-button btn-text="Закрыть" @btn-click="aiModal = false" />
+          <the-button btn-text="Очистить историю" @btn-click="clearAIHistory" />
+        </div>
+      </template>
+    </the-modal>
   </div>
 </template>
 
 <script>
+import { Scrolly, ScrollyViewport, ScrollyBar } from 'vue-scrolly'
+import { VueTypedJs } from 'vue-typed-js'
 import isNotEmptyObject from '@/mixins/isNotEmptyObject'
 import openAndCloseModal from '@/mixins/openAndCloseModal'
 import { mapState, mapGetters } from 'vuex'
+import { AlfeAI } from '@/helpers/AlfeAI'
+import classes from '@/data/classes'
+import disciplines from '@/data/disciplines'
 const TheNavigation = () => import('@/components/generic/TheNavigation')
+const TheButton = () => import('@/components/generic/TheButton')
+const TheModal = () => import('@/components/generic/TheModal')
 const ItemPopper = () => import('@/components/specific/ItemPopper')
 const AbilityPopper = () => import('@/components/specific/AbilityPopper')
 export default {
   name: 'EquipmentComponent',
-  components: { TheNavigation, ItemPopper, AbilityPopper },
+  components: {
+    TheNavigation,
+    TheButton,
+    TheModal,
+    ItemPopper,
+    AbilityPopper,
+    VueTypedJs,
+    Scrolly,
+    ScrollyViewport,
+    ScrollyBar
+  },
   mixins: [isNotEmptyObject, openAndCloseModal],
   filters: {
     fixNumber (number) {
       return number.toFixed(2)
+    }
+  },
+  data () {
+    return {
+      aiModal: false,
+      alfeAI: new AlfeAI(),
+      alfeAIResponse: null,
+      alfeAIHistory: [],
+      visibleHistory: [],
+      timer: null,
+      selectedClass: 'Juggernaut/Guardian',
+      selectedDiscipline: 'Immortal/Defense',
+      selectedAugmentRating: 286,
+      classes,
+      disciplines,
+      augmentRatings: [286, 300, 302, 310, 318],
+      request: ''
+    }
+  },
+  watch: {
+    selectedClass (value) {
+      this.selectedDiscipline = this.disciplines.find((el) => el.boundToClass === value).name
+    },
+    alfeAIHistory: {
+      handler(newVal) {
+        if (Array.isArray(newVal)) {
+          this.startTypingSequence(newVal)
+        } else {
+          this.alfeAIHistory = []
+        }
+      },
+      immediate: true
     }
   },
   computed: {
@@ -323,7 +450,16 @@ export default {
       'bonusDamageWhite',
       'bonusDamageYellow',
       'bonusHealing'
-    ])
+    ]),
+    filteredDisciplines () {
+      return this.disciplines.filter((el) => el.boundToClass === this.selectedClass)
+    }
+  },
+  created () {
+    this.alfeAIHistory = this.alfeAI.history
+  },
+  beforeDestroy () {
+    if (this.timer) clearTimeout(this.timer)
   },
   methods: {
     findItem (category, index = 0) {
@@ -365,6 +501,40 @@ export default {
         return
       }
       this.$store.commit('activateOrDeactivateDisciplineBuff', data)
+    },
+    openAIModal () {
+      this.aiModal = true
+
+      if (!this.alfeAI.history.length) {
+        this.alfeAI.hello()
+      }
+    },
+    ask () {
+      this.alfeAI.getResponse([this.selectedClass, this.selectedDiscipline, this.selectedAugmentRating])
+      this.alfeAIResponse = this.alfeAI.response
+      this.alfeAIHistory = [...this.alfeAI.history]
+    },
+    clearAIHistory () {
+      this.alfeAI.clearHistory()
+      this.alfeAIHistory = [...this.alfeAI.history]
+      this.visibleHistory = []
+      this.alfeAIResponse = null
+    },
+    startTypingSequence(messages) {
+      this.visibleHistory = []
+
+      if (this.timer) clearTimeout(this.timer)
+
+      messages.forEach((el, i) => {
+        this.timer = setTimeout(() => {
+          this.visibleHistory.push(el)
+        }, i * 1500)
+      })
+    },
+    applyAIGeneratedBuild () {
+      this.alfeAIResponse.forEach((el) => {
+        this.$store.dispatch('buyItem', el)
+      })
     }
   }
 }
@@ -452,9 +622,45 @@ export default {
                 visibility: hidden;
               }
             }
+            .ai-helper {
+              margin-top: 20px;
+            }
           }
         }
       }
+    }
+    .scrollbar .scrolly-bar:before {
+      background: #2893b7;
+      width: 30%;
+      right: -15px;
+    }
+    .ai-comment {
+      margin: 15px 0;
+      .ai-comment-head {
+        display: flex;
+        align-items: center;
+        .ai-avatar {
+          border-radius: 50%;
+          display: flex;
+          height: 40px;
+          width: 40px;
+          overflow: hidden;
+          margin-right: 5px;
+        }
+        .ai-name {
+          color: $yellow;
+          text-align: center;
+        }
+      }
+      .ai-comment-content {
+        margin-top: 10px;
+        .ai-response {
+          display: block;
+        }
+      }
+    }
+    ::v-deep .vfm-content {
+      width: 1000px !important;
     }
   }
 </style>

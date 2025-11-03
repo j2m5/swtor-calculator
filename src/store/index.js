@@ -2,6 +2,7 @@ import Vue from 'vue'
 import Vuex from 'vuex'
 import {
   activateOrDeactivateBuff,
+  generateKey,
   getBuffValue as buff,
   getItem,
   getRandomVendorComment,
@@ -289,7 +290,7 @@ const store = new Vuex.Store({
   actions: {
     buyItem ({ commit }, payload) {
       const newItem = Object.assign({}, payload)
-      newItem.id = new Date().getTime()
+      newItem.id = generateKey(32)
       commit('addItem', newItem)
       commit('updateSlot', newItem)
       commit('calculateBalance', newItem.price)
